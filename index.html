@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schulte-tábla gyakorló</title>
+  <style>
+    :root {
+      --bg-color: #f6f8fc;
+      --card-color: #ffffff;
+      --primary-color: #3f6ea8;
+      --secondary-color: #e9f0fb;
+      --text-color: #1f2d3d;
+      --section-alt-bg: #edf3ff;
+      --error-color: #e75f5f;
+      --muted-text: #445a73;
+      --border-color: #d6e2f2;
+      --chip-bg: #f2f6fd;
+      --chip-border: #d8e4f7;
+      --surface-soft: #f8fbff;
+      --shadow-color: rgba(28, 45, 66, 0.1);
+      --glow-color: transparent;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Noto Sans", Roboto, Arial, sans-serif;
+      color: var(--text-color);
+      background: var(--bg-color);
+      scroll-snap-type: y mandatory;
+      overflow-y: auto;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .page-section {
+      min-height: 100svh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(24px, 4vw, 48px) 16px;
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.75s ease, transform 0.75s ease, background-color 0.3s ease;
+    }
+
+    .page-section.is-visible { opacity: 1; transform: translateY(0); }
+
+    .section-inner { width: min(1000px, 100%); margin: 0 auto; }
+
+    .card {
+      background: var(--card-color);
+      border-radius: 22px;
+      padding: clamp(20px, 3.2vw, 34px);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 18px 42px var(--shadow-color);
+      transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    h1, h2 { margin-top: 0; line-height: 1.2; color: var(--primary-color); transition: color 0.3s ease; }
+    h1 { font-size: clamp(2rem, 6vw, 3.3rem); margin-bottom: 14px; }
+    h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); margin-bottom: 16px; }
+
+    p, li {
+      line-height: 1.72;
+      color: var(--muted-text);
+      font-size: clamp(1rem, 2.2vw, 1.07rem);
+      transition: color 0.3s ease;
+    }
+
+    .hero-section { background: linear-gradient(160deg, var(--section-alt-bg) 0%, var(--surface-soft) 60%, var(--secondary-color) 100%); text-align: center; }
+    .hero-lead { max-width: 760px; margin: 0 auto 24px; }
+
+    .hero-theme-panel {
+      margin: 0 auto 18px;
+      max-width: 680px;
+      text-align: left;
+      background: color-mix(in srgb, var(--card-color) 90%, var(--secondary-color) 10%);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .hero-theme-title {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-color);
+    }
+
+    .theme-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .theme-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--card-color);
+      color: var(--text-color);
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.15s ease, border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .theme-button:hover { transform: translateY(-1px); background: var(--surface-soft); }
+
+    .theme-button.active {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 35%, transparent), 0 0 14px var(--glow-color);
+    }
+
+    .theme-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.12);
+      display: inline-block;
+    }
+
+    .dark-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: var(--text-color);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .dark-toggle input { accent-color: var(--primary-color); }
+
+    .scroll-down-link {
+      display: inline-block;
+      border: 1px solid var(--border-color);
+      background: var(--card-color);
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 11px 18px;
+      transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .scroll-down-link:hover {
+      transform: translateY(-1px);
+      background: var(--surface-soft);
+      box-shadow: 0 8px 16px color-mix(in srgb, var(--primary-color) 20%, transparent);
+    }
+
+    .info-section { background: linear-gradient(180deg, var(--surface-soft) 0%, color-mix(in srgb, var(--secondary-color) 60%, var(--bg-color) 40%) 100%); }
+    .benefits-section { background: linear-gradient(180deg, color-mix(in srgb, var(--bg-color) 80%, var(--secondary-color) 20%) 0%, color-mix(in srgb, var(--surface-soft) 70%, var(--secondary-color) 30%) 100%); }
+    .how-section { background: linear-gradient(180deg, color-mix(in srgb, var(--secondary-color) 65%, var(--bg-color) 35%) 0%, var(--surface-soft) 100%); }
+    .how-list { margin: 0; padding-left: 18px; }
+    .practice-section { background: linear-gradient(170deg, color-mix(in srgb, var(--secondary-color) 70%, var(--bg-color) 30%) 0%, var(--surface-soft) 70%, color-mix(in srgb, var(--secondary-color) 40%, var(--bg-color) 60%) 100%); }
+
+    .benefit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 12px; }
+    .benefit-card {
+      padding: 14px;
+      border-radius: 14px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 18px color-mix(in srgb, var(--shadow-color) 80%, transparent);
+    }
+    .benefit-card h3 { margin: 0 0 6px; font-size: 1.02rem; color: var(--primary-color); }
+
+    .controls-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    .practice-section .card { text-align: center; }
+    .practice-section .controls-row,
+    .practice-section .game-info-row { justify-content: center; }
+
+    .size-button,
+    .new-game-button {
+      border: 1px solid var(--border-color);
+      background: var(--card-color);
+      color: var(--text-color);
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .size-button:hover,
+    .new-game-button:hover {
+      background: var(--surface-soft);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px color-mix(in srgb, var(--primary-color) 20%, transparent);
+    }
+
+    .size-button:active,
+    .new-game-button:active { transform: scale(0.98); }
+
+    .size-button.selected {
+      background: var(--secondary-color);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      box-shadow: 0 0 12px var(--glow-color);
+    }
+
+    .game-info-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    .info-chip {
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 700;
+      color: var(--primary-color);
+      min-width: 170px;
+      text-align: center;
+    }
+
+    .game-board { width: min(520px, 100%); margin-inline: auto; display: grid; gap: 10px; }
+
+    .board-cell {
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      min-height: clamp(56px, 11vw, 88px);
+      background: var(--card-color);
+      color: var(--text-color);
+      font-size: clamp(1.05rem, 3.2vw, 1.5rem);
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s ease, transform 0.14s ease, box-shadow 0.2s ease, color 0.3s ease;
+    }
+
+    .board-cell:hover {
+      background: var(--surface-soft);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px color-mix(in srgb, var(--primary-color) 20%, transparent);
+    }
+
+    .board-cell.correct-pulse { animation: correctPulse 0.24s ease; }
+    .board-cell.wrong-flash { animation: wrongFlash 0.32s ease; }
+
+    @keyframes correctPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.95); opacity: 0.9; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes wrongFlash {
+      0% { background: var(--card-color); }
+      40% { background: var(--error-color); color: #fff; }
+      100% { background: var(--card-color); color: var(--text-color); }
+    }
+
+    .result-panel {
+      display: none;
+      margin-top: 14px;
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .result-panel.visible { display: block; }
+    .result-panel h3 { margin: 0 0 6px; color: var(--primary-color); }
+    .result-panel p { margin: 0 0 10px; font-weight: 700; color: var(--muted-text); }
+
+    @media (max-width: 680px) {
+      body { scroll-snap-type: y proximity; }
+      .size-button,
+      .new-game-button,
+      .info-chip { flex: 1 1 calc(50% - 8px); }
+      .hero-theme-panel { text-align: center; }
+      .theme-options { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <section class="page-section hero-section is-visible" id="hero">
+    <div class="section-inner">
+      <div class="card">
+        <h1>Schulte-tábla gyakorló</h1>
+        <p class="hero-lead">
+          Egy modern, egyszerűen használható gyakorlófelület, ahol lépésről lépésre fejlesztheted a koncentrációdat,
+          a figyelmedet és a vizuális keresési sebességedet.
+        </p>
+
+        <div class="hero-theme-panel" aria-label="Megjelenés beállítások">
+          <p class="hero-theme-title">Téma és megjelenés</p>
+          <div id="themeOptions" class="theme-options"></div>
+          <label class="dark-toggle" for="darkModeToggle">
+            <input id="darkModeToggle" type="checkbox" />
+            Sötét mód
+          </label>
+        </div>
+
+        <a class="scroll-down-link" href="#mi-az">Görgess le</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="page-section info-section" id="mi-az">
+    <div class="section-inner">
+      <article class="card">
+        <h2>Mi az a Schulte-tábla?</h2>
+        <p>
+          A Schulte-tábla egy olyan vizuális feladatrendszer, amelyben véletlenszerűen elhelyezett számokat kell megtalálni
+          növekvő sorrendben. Elsőre egyszerűnek tűnik, de kiválóan tréningezi a szem és az agy együttműködését.
+        </p>
+        <p>
+          A módszert gyakran használják tanulás támogatására, fókuszfejlesztésre és általános mentális edzésre, mert rövid,
+          mégis intenzív gyakorlást ad. A cél az, hogy egyre gyorsabban és pontosabban haladj végig a teljes számsoron.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="page-section benefits-section" id="mire-jo">
+    <div class="section-inner">
+      <article class="card">
+        <h2>Mire jó?</h2>
+        <div class="benefit-grid">
+          <div class="benefit-card">
+            <h3>Koncentráció</h3>
+            <p>Segít hosszabb ideig egy feladatra fókuszálni, kevesebb kizökkenéssel.</p>
+          </div>
+          <div class="benefit-card">
+            <h3>Figyelem</h3>
+            <p>Edzi a tartós figyelmet és a gyors figyelemváltást vizuális környezetben.</p>
+          </div>
+          <div class="benefit-card">
+            <h3>Vizuális keresés</h3>
+            <p>Fejleszti a mintázatfelismerést és a célinformáció gyors megtalálását.</p>
+          </div>
+          <div class="benefit-card">
+            <h3>Feldolgozási sebesség</h3>
+            <p>Növeli az észlelés és döntés közti reakció gyorsaságát.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="page-section how-section" id="hogyan-mukodik">
+    <div class="section-inner">
+      <article class="card">
+        <h2>Hogyan működik?</h2>
+        <ul class="how-list">
+          <li>Válassz méretet: <strong>3×3</strong>, <strong>4×4</strong> vagy <strong>5×5</strong>.</li>
+          <li>A számok minden játékban <strong>véletlen sorrendben</strong> jelennek meg.</li>
+          <li>A keresés mindig az <strong>1-es</strong> számmal indul.</li>
+          <li>A játék időmérése csak akkor indul, amikor az <strong>1-esre kattintasz</strong>.</li>
+          <li>A tábla felett mindig látod a <strong>következő keresendő számot</strong>.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="page-section practice-section" id="gyakorlas">
+    <div class="section-inner">
+      <div class="card">
+        <h2>Schulte tábla</h2>
+
+        <div class="controls-row" aria-label="Méretválasztás">
+          <button class="size-button" data-size="3" type="button">3×3</button>
+          <button class="size-button" data-size="4" type="button">4×4</button>
+          <button class="size-button" data-size="5" type="button">5×5</button>
+        </div>
+
+        <div class="game-info-row" aria-label="Játék információk">
+          <div id="nextNumberDisplay" class="info-chip">Következő szám: 1</div>
+          <div id="timerDisplay" class="info-chip">Idő: 00:00.00</div>
+        </div>
+
+        <div id="gameBoard" class="game-board" aria-label="Schulte tábla"></div>
+
+        <section id="resultPanel" class="result-panel" aria-live="polite">
+          <h3>Kész!</h3>
+          <p id="resultTimeText">Eltelt idő: 00:00.00</p>
+          <button id="newGameButton" class="new-game-button" type="button">Új játék</button>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const STORAGE_THEME = 'schulte_theme';
+    const STORAGE_DARK = 'schulte_dark_mode';
+
+    const themes = {
+      blue: {
+        label: 'Kék',
+        preview: '#3f6ea8',
+        light: {
+          '--bg-color': '#f6f8fc', '--card-color': '#ffffff', '--primary-color': '#3f6ea8', '--secondary-color': '#e9f0fb',
+          '--text-color': '#1f2d3d', '--section-alt-bg': '#edf3ff', '--error-color': '#e75f5f', '--muted-text': '#445a73',
+          '--border-color': '#d6e2f2', '--chip-bg': '#f2f6fd', '--chip-border': '#d8e4f7', '--surface-soft': '#f8fbff', '--shadow-color': 'rgba(28, 45, 66, 0.1)', '--glow-color': 'transparent'
+        },
+        dark: {
+          '--bg-color': '#111827', '--card-color': '#1a2436', '--primary-color': '#80b5ff', '--secondary-color': '#22344d',
+          '--text-color': '#e7eef9', '--section-alt-bg': '#152238', '--error-color': '#ff7878', '--muted-text': '#b7c6da',
+          '--border-color': '#2e415d', '--chip-bg': '#203047', '--chip-border': '#375171', '--surface-soft': '#1d2b41', '--shadow-color': 'rgba(0, 0, 0, 0.35)', '--glow-color': 'transparent'
+        }
+      },
+      teal: {
+        label: 'Türkiz',
+        preview: '#1f9ca1',
+        light: {
+          '--bg-color': '#f2fbfb', '--card-color': '#ffffff', '--primary-color': '#1f9ca1', '--secondary-color': '#d9f2f4',
+          '--text-color': '#19323d', '--section-alt-bg': '#e6f7fa', '--error-color': '#e46a6a', '--muted-text': '#44606b',
+          '--border-color': '#cde5ea', '--chip-bg': '#eaf8fa', '--chip-border': '#cfeaf0', '--surface-soft': '#f7fdfd', '--shadow-color': 'rgba(20, 58, 64, 0.1)', '--glow-color': 'transparent'
+        },
+        dark: {
+          '--bg-color': '#0f1f24', '--card-color': '#142a31', '--primary-color': '#66d6d4', '--secondary-color': '#1d3a43',
+          '--text-color': '#e3f5f6', '--section-alt-bg': '#123038', '--error-color': '#ff8787', '--muted-text': '#b3d1d4',
+          '--border-color': '#2c4e58', '--chip-bg': '#1d3943', '--chip-border': '#39626e', '--surface-soft': '#173139', '--shadow-color': 'rgba(0, 0, 0, 0.35)', '--glow-color': 'transparent'
+        }
+      },
+      indigo: {
+        label: 'Lila / indigo',
+        preview: '#5e67d8',
+        light: {
+          '--bg-color': '#f5f6ff', '--card-color': '#ffffff', '--primary-color': '#5e67d8', '--secondary-color': '#e6e8ff',
+          '--text-color': '#25264a', '--section-alt-bg': '#edefff', '--error-color': '#e26767', '--muted-text': '#54567a',
+          '--border-color': '#d9dcf8', '--chip-bg': '#f1f3ff', '--chip-border': '#dce1ff', '--surface-soft': '#f9faff', '--shadow-color': 'rgba(42, 44, 92, 0.1)', '--glow-color': 'transparent'
+        },
+        dark: {
+          '--bg-color': '#14152a', '--card-color': '#1b1d39', '--primary-color': '#a5aaff', '--secondary-color': '#25284d',
+          '--text-color': '#ececff', '--section-alt-bg': '#1c1f41', '--error-color': '#ff8b8b', '--muted-text': '#c2c4ea',
+          '--border-color': '#343964', '--chip-bg': '#2a2d55', '--chip-border': '#454b7f', '--surface-soft': '#222649', '--shadow-color': 'rgba(0, 0, 0, 0.36)', '--glow-color': 'transparent'
+        }
+      },
+
+      neon: {
+        label: 'Neon kék–lila',
+        preview: '#4d6bff',
+        light: {
+          '--bg-color': '#eef1ff', '--card-color': '#fdfdff', '--primary-color': '#4d6bff', '--secondary-color': '#e6e1ff',
+          '--text-color': '#1f2142', '--section-alt-bg': '#e4e9ff', '--error-color': '#ff6d88', '--muted-text': '#4b4f7a',
+          '--border-color': '#d3d8ff', '--chip-bg': '#eef1ff', '--chip-border': '#d2d8ff', '--surface-soft': '#f7f8ff', '--shadow-color': 'rgba(48, 54, 122, 0.13)', '--glow-color': 'transparent'
+        },
+        dark: {
+          '--bg-color': '#0e1022', '--card-color': '#181b36', '--primary-color': '#7a8dff', '--secondary-color': '#272b52',
+          '--text-color': '#eef0ff', '--section-alt-bg': '#171b3b', '--error-color': '#ff7f96', '--muted-text': '#bbc2f2',
+          '--border-color': '#3a3f73', '--chip-bg': '#23284b', '--chip-border': '#4a5290', '--surface-soft': '#1d2144', '--shadow-color': 'rgba(0, 0, 0, 0.42)', '--glow-color': 'transparent'
+        }
+      },
+      sunset: {
+        label: 'Narancs–rózsaszín',
+        preview: '#ff7a45',
+        light: {
+          '--bg-color': '#fff5f1', '--card-color': '#fffdfc', '--primary-color': '#f45d48', '--secondary-color': '#ffe2d8',
+          '--text-color': '#3b2a2c', '--section-alt-bg': '#ffd9cf', '--error-color': '#dc4f5d', '--muted-text': '#644b4f',
+          '--border-color': '#f2cfc4', '--chip-bg': '#ffece6', '--chip-border': '#f5d4c8', '--surface-soft': '#fff8f5', '--shadow-color': 'rgba(122, 62, 50, 0.12)', '--glow-color': 'transparent'
+        },
+        dark: {
+          '--bg-color': '#261617', '--card-color': '#342022', '--primary-color': '#ff8f5b', '--secondary-color': '#4a2c2f',
+          '--text-color': '#ffe9e4', '--section-alt-bg': '#412428', '--error-color': '#ff8a98', '--muted-text': '#e3bcb3',
+          '--border-color': '#654046', '--chip-bg': '#4a2e31', '--chip-border': '#7d5057', '--surface-soft': '#3e2528', '--shadow-color': 'rgba(0, 0, 0, 0.4)', '--glow-color': 'transparent'
+        }
+      },
+      mint: {
+        label: 'Zöld / menta',
+        preview: '#2fb98f',
+        light: {
+          '--bg-color': '#f1fcf7', '--card-color': '#ffffff', '--primary-color': '#2fb98f', '--secondary-color': '#d9f4ea',
+          '--text-color': '#1f3a34', '--section-alt-bg': '#e5f8f1', '--error-color': '#e06363', '--muted-text': '#46655f',
+          '--border-color': '#cde8dd', '--chip-bg': '#e9f8f2', '--chip-border': '#cfeee2', '--surface-soft': '#f7fefb', '--shadow-color': 'rgba(31, 85, 71, 0.1)', '--glow-color': 'transparent'
+        },
+        dark: {
+          '--bg-color': '#0f201b', '--card-color': '#18312b', '--primary-color': '#56deb2', '--secondary-color': '#21433a',
+          '--text-color': '#e6f9f2', '--section-alt-bg': '#193a31', '--error-color': '#ff8b8b', '--muted-text': '#b8d9cf',
+          '--border-color': '#2f5a4f', '--chip-bg': '#22463c', '--chip-border': '#3b6f60', '--surface-soft': '#1b3a31', '--shadow-color': 'rgba(0, 0, 0, 0.38)', '--glow-color': 'transparent'
+        }
+      },
+
+      cyberpunk: {
+        label: 'Cyberpunk',
+        preview: '#00e9ff',
+        light: {
+          '--bg-color': '#141125', '--card-color': '#1d1733', '--primary-color': '#00e9ff', '--secondary-color': '#ff3faf',
+          '--text-color': '#f4f7ff', '--section-alt-bg': '#1a1430', '--error-color': '#ff5c86', '--muted-text': '#c8c9e8',
+          '--border-color': '#3a2f63', '--chip-bg': '#261e42', '--chip-border': '#4d3b7c', '--surface-soft': '#211a3a',
+          '--shadow-color': 'rgba(0, 0, 0, 0.45)', '--glow-color': 'rgba(0, 233, 255, 0.45)'
+        },
+        dark: {
+          '--bg-color': '#0c0a17', '--card-color': '#151028', '--primary-color': '#00f0ff', '--secondary-color': '#ff47b5',
+          '--text-color': '#f7f9ff', '--section-alt-bg': '#120d22', '--error-color': '#ff6a93', '--muted-text': '#c2c4e0',
+          '--border-color': '#302552', '--chip-bg': '#1b1432', '--chip-border': '#49386f', '--surface-soft': '#18122c',
+          '--shadow-color': 'rgba(0, 0, 0, 0.5)', '--glow-color': 'rgba(255, 224, 102, 0.35)'
+        }
+      },
+      fantasy: {
+        label: 'Fantasy',
+        preview: '#2f6b52',
+        light: {
+          '--bg-color': '#f6efdf', '--card-color': '#fff9ea', '--primary-color': '#2f6b52', '--secondary-color': '#5f4a85',
+          '--text-color': '#2f2a22', '--section-alt-bg': '#efe4ce', '--error-color': '#b45454', '--muted-text': '#5d5445',
+          '--border-color': '#d7c9a9', '--chip-bg': '#f3e9d3', '--chip-border': '#d7c7a0', '--surface-soft': '#fffdf5',
+          '--shadow-color': 'rgba(83, 63, 33, 0.12)', '--glow-color': 'rgba(198, 157, 61, 0.3)'
+        },
+        dark: {
+          '--bg-color': '#1f1a15', '--card-color': '#2a231d', '--primary-color': '#6bc59a', '--secondary-color': '#a18bd0',
+          '--text-color': '#f2ead8', '--section-alt-bg': '#2a221b', '--error-color': '#d17575', '--muted-text': '#d2c2a5',
+          '--border-color': '#4a3f32', '--chip-bg': '#342a22', '--chip-border': '#5a4b39', '--surface-soft': '#2f261f',
+          '--shadow-color': 'rgba(0, 0, 0, 0.4)', '--glow-color': 'rgba(199, 161, 75, 0.28)'
+        }
+      },
+      horror: {
+        label: 'Horror',
+        preview: '#7d1c1c',
+        light: {
+          '--bg-color': '#1a1718', '--card-color': '#232022', '--primary-color': '#9e2828', '--secondary-color': '#2e2628',
+          '--text-color': '#f2ecec', '--section-alt-bg': '#221d1f', '--error-color': '#d64a4a', '--muted-text': '#c9bcbc',
+          '--border-color': '#40363a', '--chip-bg': '#2c2528', '--chip-border': '#4f4045', '--surface-soft': '#262124',
+          '--shadow-color': 'rgba(0, 0, 0, 0.5)', '--glow-color': 'rgba(158, 40, 40, 0.18)'
+        },
+        dark: {
+          '--bg-color': '#0f0d0e', '--card-color': '#181516', '--primary-color': '#b22d2d', '--secondary-color': '#241c1e',
+          '--text-color': '#f5efef', '--section-alt-bg': '#171314', '--error-color': '#e45a5a', '--muted-text': '#c6b8b8',
+          '--border-color': '#32292c', '--chip-bg': '#201a1c', '--chip-border': '#43353a', '--surface-soft': '#1b1718',
+          '--shadow-color': 'rgba(0, 0, 0, 0.58)', '--glow-color': 'rgba(178, 45, 45, 0.22)'
+        }
+      },
+      warm: {
+        label: 'Meleg',
+        preview: '#33557f',
+        light: {
+          '--bg-color': '#faf7f2', '--card-color': '#fffdf9', '--primary-color': '#33557f', '--secondary-color': '#ebe2d5',
+          '--text-color': '#2e3642', '--section-alt-bg': '#f3ece3', '--error-color': '#d86a5f', '--muted-text': '#575f68',
+          '--border-color': '#dfd4c6', '--chip-bg': '#f6efe5', '--chip-border': '#e1d6c6', '--surface-soft': '#fffbf5', '--shadow-color': 'rgba(60, 51, 39, 0.1)', '--glow-color': 'transparent'
+        },
+        dark: {
+          '--bg-color': '#1f1a16', '--card-color': '#2a241f', '--primary-color': '#8fb2dd', '--secondary-color': '#3a322a',
+          '--text-color': '#f1e9dd', '--section-alt-bg': '#312922', '--error-color': '#ff8f82', '--muted-text': '#d1c2af',
+          '--border-color': '#4a4036', '--chip-bg': '#3a3028', '--chip-border': '#5a4c3f', '--surface-soft': '#332b24', '--shadow-color': 'rgba(0, 0, 0, 0.38)', '--glow-color': 'transparent'
+        }
+      }
+    };
+
+    const themeState = {
+      currentTheme: localStorage.getItem(STORAGE_THEME) || 'blue',
+      darkMode: localStorage.getItem(STORAGE_DARK) === 'true'
+    };
+
+    // Játék állapot.
+    const state = {
+      currentSize: 4,
+      currentNumber: 1,
+      gameStarted: false,
+      gameFinished: false,
+      startTime: null,
+      timerInterval: null,
+      elapsedMs: 0
+    };
+
+    const elements = {
+      board: document.getElementById('gameBoard'),
+      nextNumber: document.getElementById('nextNumberDisplay'),
+      timer: document.getElementById('timerDisplay'),
+      resultPanel: document.getElementById('resultPanel'),
+      resultTimeText: document.getElementById('resultTimeText'),
+      newGameButton: document.getElementById('newGameButton'),
+      sizeButtons: document.querySelectorAll('.size-button'),
+      pageSections: document.querySelectorAll('.page-section'),
+      themeOptions: document.getElementById('themeOptions'),
+      darkModeToggle: document.getElementById('darkModeToggle')
+    };
+
+    function applyTheme(themeName, isDarkMode) {
+      const theme = themes[themeName] || themes.blue;
+      const palette = isDarkMode ? theme.dark : theme.light;
+      Object.entries(palette).forEach(([variable, value]) => {
+        document.documentElement.style.setProperty(variable, value);
+      });
+
+      themeState.currentTheme = themeName;
+      themeState.darkMode = isDarkMode;
+      localStorage.setItem(STORAGE_THEME, themeName);
+      localStorage.setItem(STORAGE_DARK, String(isDarkMode));
+
+      [...elements.themeOptions.querySelectorAll('.theme-button')].forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.theme === themeName);
+      });
+      elements.darkModeToggle.checked = isDarkMode;
+    }
+
+    function buildThemeOptions() {
+      elements.themeOptions.innerHTML = '';
+      Object.entries(themes).forEach(([key, config]) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'theme-button';
+        button.dataset.theme = key;
+        button.innerHTML = `<span class="theme-dot" style="background:${config.preview}"></span><span>${config.label}</span>`;
+        button.addEventListener('click', () => applyTheme(key, themeState.darkMode));
+        elements.themeOptions.appendChild(button);
+      });
+    }
+
+    function formatTime(ms) {
+      const centisecondsAll = Math.floor(ms / 10);
+      const minutes = Math.floor(centisecondsAll / 6000);
+      const seconds = Math.floor((centisecondsAll % 6000) / 100);
+      const centiseconds = centisecondsAll % 100;
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
+    }
+
+    function shuffleNumbers(numbers) {
+      for (let i = numbers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+      }
+      return numbers;
+    }
+
+    function initSectionAnimations() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add('is-visible');
+        });
+      }, { threshold: 0.24 });
+
+      elements.pageSections.forEach((section) => observer.observe(section));
+    }
+
+    function updateUI() {
+      const max = state.currentSize * state.currentSize;
+      elements.nextNumber.textContent = state.gameFinished ? 'Következő szám: kész' : `Következő szám: ${state.currentNumber}`;
+      elements.timer.textContent = `Idő: ${formatTime(state.elapsedMs)}`;
+      elements.resultPanel.classList.toggle('visible', state.gameFinished);
+      elements.resultTimeText.textContent = `Eltelt idő: ${formatTime(state.elapsedMs)}`;
+
+      elements.sizeButtons.forEach((button) => {
+        button.classList.toggle('selected', Number(button.dataset.size) === state.currentSize);
+      });
+
+      if (state.currentNumber > max && !state.gameFinished) endGame();
+    }
+
+    function clearTimer() {
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+    }
+
+    function startTimer() {
+      state.startTime = performance.now();
+      state.timerInterval = setInterval(() => {
+        state.elapsedMs = performance.now() - state.startTime;
+        updateUI();
+      }, 40);
+    }
+
+    function endGame() {
+      state.gameFinished = true;
+      clearTimer();
+      if (state.startTime !== null) state.elapsedMs = performance.now() - state.startTime;
+      updateUI();
+    }
+
+    function handleClick(value, cellElement) {
+      if (state.gameFinished) return;
+
+      if (value === state.currentNumber) {
+        cellElement.classList.remove('correct-pulse');
+        void cellElement.offsetWidth;
+        cellElement.classList.add('correct-pulse');
+
+        if (!state.gameStarted && value === 1) {
+          state.gameStarted = true;
+          startTimer();
+        }
+
+        state.currentNumber += 1;
+        const max = state.currentSize * state.currentSize;
+        if (state.currentNumber > max) endGame();
+        else updateUI();
+      } else {
+        cellElement.classList.remove('wrong-flash');
+        void cellElement.offsetWidth;
+        cellElement.classList.add('wrong-flash');
+      }
+    }
+
+    function generateBoard(size) {
+      const max = size * size;
+      const numbers = shuffleNumbers(Array.from({ length: max }, (_, index) => index + 1));
+      elements.board.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
+      elements.board.innerHTML = '';
+
+      numbers.forEach((value) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'board-cell';
+        button.textContent = String(value);
+        button.addEventListener('click', () => handleClick(value, button));
+        elements.board.appendChild(button);
+      });
+    }
+
+    function initGame(size) {
+      clearTimer();
+      state.currentSize = size;
+      state.currentNumber = 1;
+      state.gameStarted = false;
+      state.gameFinished = false;
+      state.startTime = null;
+      state.elapsedMs = 0;
+
+      generateBoard(size);
+      updateUI();
+    }
+
+    elements.sizeButtons.forEach((button) => {
+      button.addEventListener('click', () => initGame(Number(button.dataset.size)));
+    });
+
+    elements.newGameButton.addEventListener('click', () => initGame(state.currentSize));
+
+    elements.darkModeToggle.addEventListener('change', (event) => {
+      applyTheme(themeState.currentTheme, event.target.checked);
+    });
+
+    buildThemeOptions();
+    applyTheme(themeState.currentTheme, themeState.darkMode);
+    initSectionAnimations();
+    initGame(state.currentSize);
+  </script>
+</body>
+</html>
